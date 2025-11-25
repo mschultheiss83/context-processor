@@ -29,7 +29,7 @@ An intelligent Model Context Protocol (MCP) server for saving, managing, and enh
 ## Installation
 
 ```bash
-npm install
+npm install context-processor
 ```
 
 ## Building
