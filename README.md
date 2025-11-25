@@ -1,5 +1,7 @@
 # Context Processor
 
+> ⚠️ **DISCLAIMER**: This MCP server is entirely written and maintained by AI (Claude/Gemini) with manual supervision. It is a **personal test project** created to explore AI-assisted development. Use at your own discretion.
+
 An intelligent Model Context Protocol (MCP) server for saving, managing, and enhancing context with pre-processing strategies. This server helps you organize information efficiently by applying smart transformations like clarification, analysis, and search optimization.
 
 ## Features
