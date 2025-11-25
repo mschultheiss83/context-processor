@@ -1,6 +1,6 @@
-# Publishing Guide - Context MCP Server
+# Publishing Guide - Context Processor
 
-This guide covers publishing the Context MCP Server to npm and GitHub.
+This guide covers publishing the Context Processor to npm and GitHub.
 
 ## Quick Start
 
@@ -62,7 +62,7 @@ git add .
 
 #### Create Initial Commit
 ```bash
-git commit -m "Initial release: Context MCP Server v1.0.0
+git commit -m "Initial release: Context Processor v1.0.0
 
 - Complete MCP server implementation
 - 211 comprehensive test cases
@@ -338,7 +338,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-11-25
 
 ### Added
-- Initial release of Context MCP Server
+- Initial release of Context Processor
 - 6 MCP tools for context management
 - 5 pre-processing strategies
 - 211 comprehensive test cases (85%+ coverage)
@@ -642,4 +642,4 @@ For issues or questions:
 
 **Ready to Publish!**
 
-Follow the steps above to publish the Context MCP Server to npm and GitHub.
+Follow the steps above to publish the Context Processor to npm and GitHub.

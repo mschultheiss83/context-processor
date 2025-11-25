@@ -1,5 +1,5 @@
 {
-  "name": "context-mcp-server",
+  "name": "context-processor",
   "version": "1.0.0",
   "description": "Intelligent context management MCP server with pre-processing strategies for enhanced content processing",
   "main": "dist/index.js",
@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/context-mcp-server.git"
+    "url": "https://github.com/martinschultheiss/context-processor.git"
   },
   "keywords": [
     "mcp",
@@ -32,12 +32,12 @@
     "language-model",
     "knowledge-base"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Martin Schultheiss <mschultheiss83@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/context-mcp-server/issues"
+    "url": "https://github.com/martinschultheiss/context-processor/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/context-mcp-server#readme",
+  "homepage": "https://github.com/martinschultheiss/context-processor#readme",
   "engines": {
     "node": ">=16.0.0"
   },

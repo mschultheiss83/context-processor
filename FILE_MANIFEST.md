@@ -1,6 +1,6 @@
-# Context MCP Server - File Manifest
+# Context Processor - File Manifest
 
-Complete list of all files created for the Context MCP Server project.
+Complete list of all files created for the Context Processor project.
 
 ## Source Code Files
 

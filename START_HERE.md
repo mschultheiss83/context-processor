@@ -1,6 +1,6 @@
-# Context MCP Server - Start Here
+# Context Processor - Start Here
 
-Welcome! This guide helps you get started with the Context MCP Server.
+Welcome! This guide helps you get started with the Context Processor.
 
 ## What You Got
 
@@ -46,7 +46,7 @@ npm install && npm run build && npm start
 Problem: You need to save and organize context efficiently,
          with automatic clarity improvement and searchability.
 
-Solution: Context MCP Server
+Solution: Context Processor
          - Saves content with configurable pre-processing
          - 5 strategies: clarify, analyze, search, fetch, custom
          - 5 pre-built models combining these strategies
@@ -123,7 +123,7 @@ npm run build
 npm start
 ```
 
-You should see: `Context MCP Server started`
+You should see: `Context Processor started`
 
 ### 4. (Optional) Use with Claude Code
 Follow instructions in `CLAUDE_CODE_INTEGRATION.md`

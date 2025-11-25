@@ -1,4 +1,4 @@
-# Context MCP Server - Architecture Guide
+# Context Processor - Architecture Guide
 
 ## System Architecture
 
@@ -10,7 +10,7 @@
                      │ MCP Protocol (JSON-RPC)
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Context MCP Server                         │
+│                   Context Processor                         │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │            Request Handler (index.ts)                │   │
 │  │  - Tool listing & discovery                          │   │

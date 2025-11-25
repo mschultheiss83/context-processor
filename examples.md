@@ -1,6 +1,6 @@
-# Context MCP Server - Usage Examples
+# Context Processor - Usage Examples
 
-This document provides practical examples of how to use the Context MCP Server.
+This document provides practical examples of how to use the Context Processor.
 
 ## Example 1: Save a Technical Document with Comprehensive Processing
 

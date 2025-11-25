@@ -32,7 +32,7 @@ class ContextMCPServer {
 
   constructor() {
     this.server = new Server({
-      name: "context-mcp-server",
+      name: "context-processor",
       version: "1.0.0",
     });
 
@@ -423,7 +423,7 @@ class ContextMCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Context MCP Server started");
+    console.error("Context Processor started");
   }
 }
 

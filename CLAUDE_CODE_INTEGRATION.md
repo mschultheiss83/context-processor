@@ -1,12 +1,12 @@
 # Claude Code Integration Guide
 
-This guide explains how to use the Context MCP Server with Claude Code.
+This guide explains how to use the Context Processor with Claude Code.
 
 ## Configuration
 
 ### 1. Update Your Claude Code Settings
 
-Add the Context MCP Server to your Claude Code configuration. You can do this by:
+Add the Context Processor to your Claude Code configuration. You can do this by:
 
 1. Opening your Claude Code settings file (usually in `~/.claude/settings.json` or similar)
 2. Adding the server to the `mcpServers` section:
@@ -32,7 +32,7 @@ npm run build
 
 ## Using with Claude Code
 
-Once configured, you can use the Context MCP Server tools directly in your Claude Code interactions.
+Once configured, you can use the Context Processor tools directly in your Claude Code interactions.
 
 ### Example 1: Save Context About Your Current Project
 
@@ -357,7 +357,7 @@ Combine with other MCP servers:
 
 ## Summary
 
-The Context MCP Server with Claude Code enables:
+The Context Processor with Claude Code enables:
 - ✅ Intelligent context saving with automatic clarity improvement
 - ✅ Keyword extraction for better discoverability
 - ✅ Content analysis for understanding structure

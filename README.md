@@ -1,4 +1,4 @@
-# Context MCP Server
+# Context Processor
 
 An intelligent Model Context Protocol (MCP) server for saving, managing, and enhancing context with pre-processing strategies. This server helps you organize information efficiently by applying smart transformations like clarification, analysis, and search optimization.
 

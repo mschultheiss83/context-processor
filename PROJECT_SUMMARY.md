@@ -1,4 +1,4 @@
-# Context MCP Server - Project Summary
+# Context Processor - Project Summary
 
 ## Overview
 
@@ -402,7 +402,7 @@ The project includes:
 
 ## Summary
 
-This Context MCP Server provides a sophisticated yet simple system for intelligent context management. It combines:
+This Context Processor provides a sophisticated yet simple system for intelligent context management. It combines:
 
 - ✅ Structured storage with metadata
 - ✅ Smart pre-processing strategies

@@ -1,8 +1,8 @@
-# Context MCP Server - Comprehensive Testing Guide
+# Context Processor - Comprehensive Testing Guide
 
 ## Overview
 
-This document describes the 3 comprehensive test scenarios that verify all functionality of the Context MCP Server. The tests cover storage operations, pre-processing strategies, and complex workflows.
+This document describes the 3 comprehensive test scenarios that verify all functionality of the Context Processor. The tests cover storage operations, pre-processing strategies, and complex workflows.
 
 ## Quick Start
 

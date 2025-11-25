@@ -1,8 +1,8 @@
-# Quick Start Guide - Context MCP Server
+# Quick Start Guide - Context Processor
 
 ## What is This?
 
-The Context MCP Server is an intelligent system for saving and managing context through pre-processing models. It uses configurable strategies to:
+The Context Processor is an intelligent system for saving and managing context through pre-processing models. It uses configurable strategies to:
 - **Clarify** content by improving language clarity
 - **Analyze** content structure and complexity
 - **Search** by extracting keywords for better discoverability
@@ -29,7 +29,7 @@ npm run build
 npm start
 ```
 
-You should see: `Context MCP Server started`
+You should see: `Context Processor started`
 
 ### 4. Use the Server (via MCP Client)
 
