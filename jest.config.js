@@ -16,4 +16,5 @@ export default {
     },
   },
   testTimeout: 10000,
+  maxWorkers: 1,
 };
