@@ -11,14 +11,14 @@
  * Covers: save_context, load_context, list_contexts, delete_context tools
  */
 
-import { ContextStorage } from "../src/storage.js";
+import { ContextStorage } from "../src/storage";
 import {
   TestDataGenerator,
   TestStorageManager,
   TestAssertions,
   ContextComparison,
-} from "./test-utils.js";
-import { ContextItem } from "../src/types.js";
+} from "./test-utils";
+import { ContextItem } from "../src/types";
 
 describe("Scenario 1: Complete Context Lifecycle", () => {
   let storageManager: TestStorageManager;

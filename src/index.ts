@@ -1,12 +1,6 @@
-import {
-  Server,
-  StdioServerTransport,
-} from "@modelcontextprotocol/sdk/server/index.js";
-import {
-  CallToolRequest,
-  ListToolsRequest,
-  Tool,
-} from "@modelcontextprotocol/sdk/types.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
 import { randomUUID } from "crypto";
 import { ContextStorage } from "./storage.js";
 import { ContextPreprocessor } from "./preprocessor.js";
@@ -25,13 +19,13 @@ import * as fs from "fs";
 import * as path from "path";
 
 class ContextMCPServer {
-  private server: Server;
+  private server: McpServer;
   private storage: ContextStorage;
   private preprocessor: ContextPreprocessor;
   private models: Map<string, ContextModel> = new Map();
 
   constructor() {
-    this.server = new Server({
+    this.server = new McpServer({
       name: "context-processor",
       version: "1.0.0",
     });
@@ -39,178 +33,204 @@ class ContextMCPServer {
     this.storage = new ContextStorage("./contexts");
     this.preprocessor = new ContextPreprocessor();
 
-    this.setupHandlers();
     this.loadModels();
+    this.setupTools();
   }
 
-  private setupHandlers(): void {
-    this.server.setRequestHandler(ListToolsRequest, async () => {
-      return {
-        tools: this.getAvailableTools(),
-      };
-    });
-
-    this.server.setRequestHandler(CallToolRequest, async (request) => {
-      return this.handleToolCall(request);
-    });
-  }
-
-  private getAvailableTools(): Tool[] {
-    return [
+  private setupTools(): void {
+    // Register save_context tool
+    this.server.registerTool(
+      "save_context",
       {
-        name: "save_context",
         description:
           "Save content as context with optional pre-processing using a model",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            title: {
-              type: "string",
-              description: "Title for the context",
-            },
-            content: {
-              type: "string",
-              description: "Content to save",
-            },
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              description: "Tags for organizing context",
-            },
-            metadata: {
-              type: "object",
-              description: "Additional metadata",
-            },
-            modelName: {
-              type: "string",
-              description:
-                "Name of the context model to use for pre-processing",
-            },
-          },
-          required: ["title", "content"],
-        },
+        inputSchema: z.object({
+          title: z.string().describe("Title for the context"),
+          content: z.string().describe("Content to save"),
+          tags: z
+            .array(z.string())
+            .optional()
+            .describe("Tags for organizing context"),
+          metadata: z.record(z.unknown()).optional().describe("Additional metadata"),
+          modelName: z
+            .string()
+            .optional()
+            .describe("Name of the context model to use for pre-processing"),
+        }),
       },
-      {
-        name: "load_context",
-        description: "Load a previously saved context by ID",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            contextId: {
-              type: "string",
-              description: "ID of the context to load",
-            },
-          },
-          required: ["contextId"],
-        },
-      },
-      {
-        name: "list_contexts",
-        description: "List all saved contexts with optional filtering",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              description: "Filter by tags",
-            },
-            limit: {
-              type: "number",
-              description: "Maximum number of contexts to return",
-            },
-            offset: {
-              type: "number",
-              description: "Number of contexts to skip",
-            },
-          },
-        },
-      },
-      {
-        name: "list_models",
-        description: "List available context models for pre-processing",
-        inputSchema: {
-          type: "object" as const,
-          properties: {},
-        },
-      },
-      {
-        name: "delete_context",
-        description: "Delete a context by ID",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            contextId: {
-              type: "string",
-              description: "ID of the context to delete",
-            },
-          },
-          required: ["contextId"],
-        },
-      },
-      {
-        name: "get_model_info",
-        description: "Get detailed information about a context model",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            modelName: {
-              type: "string",
-              description: "Name of the model",
-            },
-          },
-          required: ["modelName"],
-        },
-      },
-    ];
-  }
-
-  private async handleToolCall(
-    request: CallToolRequest
-  ): Promise<{ content: Array<{ type: string; text: string }> }> {
-    const { name, arguments: args } = request;
-
-    try {
-      let result: string;
-
-      switch (name) {
-        case "save_context":
-          result = await this.handleSaveContext(args as SaveContextRequest);
-          break;
-        case "load_context":
-          result = await this.handleLoadContext(args as LoadContextRequest);
-          break;
-        case "list_contexts":
-          result = await this.handleListContexts(
-            args as ListContextsRequest
-          );
-          break;
-        case "list_models":
-          result = this.handleListModels();
-          break;
-        case "delete_context":
-          result = this.handleDeleteContext(args as { contextId: string });
-          break;
-        case "get_model_info":
-          result = this.handleGetModelInfo(args as { modelName: string });
-          break;
-        default:
-          result = `Unknown tool: ${name}`;
+      async (args) => {
+        try {
+          const result = await this.handleSaveContext(args as SaveContextRequest);
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
       }
+    );
 
-      return {
-        content: [{ type: "text", text: result }],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-      };
-    }
+    // Register load_context tool
+    this.server.registerTool(
+      "load_context",
+      {
+        description: "Load a previously saved context by ID",
+        inputSchema: z.object({
+          contextId: z.string().describe("ID of the context to load"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = await this.handleLoadContext(args as LoadContextRequest);
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    // Register list_contexts tool
+    this.server.registerTool(
+      "list_contexts",
+      {
+        description: "List all saved contexts with optional filtering",
+        inputSchema: z.object({
+          tags: z
+            .array(z.string())
+            .optional()
+            .describe("Filter by tags"),
+          limit: z
+            .number()
+            .optional()
+            .describe("Maximum number of contexts to return"),
+          offset: z
+            .number()
+            .optional()
+            .describe("Number of contexts to skip"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = await this.handleListContexts(args as ListContextsRequest);
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    // Register list_models tool
+    this.server.registerTool(
+      "list_models",
+      {
+        description: "List available context models for pre-processing",
+        inputSchema: z.object({}),
+      },
+      async () => {
+        try {
+          const result = this.handleListModels();
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    // Register delete_context tool
+    this.server.registerTool(
+      "delete_context",
+      {
+        description: "Delete a context by ID",
+        inputSchema: z.object({
+          contextId: z.string().describe("ID of the context to delete"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = this.handleDeleteContext(args as { contextId: string });
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    // Register get_model_info tool
+    this.server.registerTool(
+      "get_model_info",
+      {
+        description: "Get detailed information about a context model",
+        inputSchema: z.object({
+          modelName: z.string().describe("Name of the model"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = this.handleGetModelInfo(args as { modelName: string });
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
   }
 
   private async handleSaveContext(

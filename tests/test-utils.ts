@@ -4,9 +4,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { ContextItem, ContextModel } from "../src/types.js";
-import { ContextStorage } from "../src/storage.js";
-import { ContextPreprocessor } from "../src/preprocessor.js";
+import { ContextItem, ContextModel } from "../src/types";
+import { ContextStorage } from "../src/storage";
+import { ContextPreprocessor } from "../src/preprocessor";
 
 /**
  * Test data generator utilities
@@ -197,7 +197,13 @@ export class TestStorageManager {
    */
   cleanup(): void {
     if (fs.existsSync(this.testStorageDir)) {
-      fs.rmSync(this.testStorageDir, { recursive: true, force: true });
+      try {
+        fs.rmSync(this.testStorageDir, { recursive: true, force: true });
+      } catch (error) {
+        // Ignore cleanup errors - they don't affect test results
+        // This can happen on Windows with file locking issues
+        // The directory will be cleaned up eventually
+      }
     }
   }
 

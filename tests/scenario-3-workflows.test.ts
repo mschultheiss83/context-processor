@@ -18,9 +18,9 @@ import {
   TestAssertions,
   PreprocessorTestHelper,
   ContextComparison,
-} from "./test-utils.js";
-import { ContextItem, PreProcessingStrategy } from "../src/types.js";
-import { ContextStorage } from "../src/storage.js";
+} from "./test-utils";
+import { ContextItem, PreProcessingStrategy } from "../src/types";
+import { ContextStorage } from "../src/storage";
 
 describe("Scenario 3: Complex Multi-Model Workflows", () => {
   let storageManager: TestStorageManager;

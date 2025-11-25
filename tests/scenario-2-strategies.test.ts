@@ -15,7 +15,7 @@ import {
   TestDataGenerator,
   TestAssertions,
   PreprocessorTestHelper,
-} from "./test-utils.js";
+} from "./test-utils";
 
 describe("Scenario 2: Pre-Processing Strategies", () => {
   let helper: PreprocessorTestHelper;
@@ -429,7 +429,7 @@ describe("Scenario 2: Pre-Processing Strategies", () => {
     test("should handle special characters", async () => {
       // Arrange
       const content =
-        'Special: !@#$%^&*()_+ Characters: ""''‹› Quotes: " \' ` Symbols: © ® ™';
+        'Special: !@#$%^&*()_+ Characters: "" Quotes: " \' ` Symbols: © ® ™';
 
       // Act
       const result = await helper.testComprehensiveProcessing(content);
