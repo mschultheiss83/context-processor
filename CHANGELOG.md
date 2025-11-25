@@ -5,6 +5,27 @@ All notable changes to Context Processor are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-11-26
+
+### Added
+
+- **Documentation Organization** - Moved 15 reference docs to `docs/` directory with navigation hub
+- **Fair Critique Issue** - Added Issue #10 with honest assessment of project limitations and testing gaps
+- **AI Transparency** - Added prominent disclaimer in README about AI authorship and supervision
+- **Auto-assign Workflow** - Issues automatically assigned to repository owner on creation
+
+### Changed
+
+- **Project Structure** - Root directory now contains only essential files (README, CHANGELOG, CONTRIBUTING, PUBLISHING)
+- **Documentation** - `docs/README.md` provides navigation for all reference materials
+- **Settings Configuration** - Updated Claude Code settings to require confirmation for `gh release` commands
+
+### Improved
+
+- **Repository Organization** - Cleaner root directory for better project navigation
+- **Issue Management** - Automatic assignment improves workflow efficiency
+- **Security** - Explicit permission model prevents accidental releases
+
 ## [1.0.1] - 2025-11-25
 
 ### Added
@@ -92,8 +113,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Release Date | Status | Changes |
 |---------|-------------|--------|---------|
-| 1.0.1   | 2025-11-25  | Latest | Windows fix, wiki, examples, GitHub Actions |
-| 1.0.0   | 2025-11-22  | Stable | Initial release, core features, 81 tests |
+| 1.0.2   | 2025-11-26  | Latest | Docs org, transparency, auto-assign, fair critique |
+| 1.0.1   | 2025-11-25  | Stable | Windows fix, wiki, examples, GitHub Actions |
+| 1.0.0   | 2025-11-22  | Archive | Initial release, core features, 81 tests |
 
 ---
 
