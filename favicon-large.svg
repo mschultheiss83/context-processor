@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e88e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="url(#bgGradient)" rx="8"/>
+
+  <!-- Document/Context box -->
+  <rect x="20" y="24" width="52" height="80" fill="none" stroke="white" stroke-width="4" rx="4"/>
+
+  <!-- Lines in document (representing context content) -->
+  <line x1="32" y1="40" x2="60" y2="40" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <line x1="32" y1="58" x2="60" y2="58" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <line x1="32" y1="76" x2="52" y2="76" stroke="white" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Processing arrow (transformation) -->
+  <path d="M 80 60 L 104 60" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <polygon points="108,60 98,48 98,72" fill="white"/>
+
+  <!-- Small gear/processor symbol on arrow -->
+  <circle cx="92" cy="50" r="3" fill="none" stroke="white" stroke-width="1.5"/>
+  <circle cx="92" cy="70" r="3" fill="none" stroke="white" stroke-width="1.5"/>
+</svg>
