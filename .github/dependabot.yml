@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "mschultheiss83"
+    assignees:
+      - "mschultheiss83"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    # Group minor and patch updates
+    groups:
+      development:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "mschultheiss83"
+    assignees:
+      - "mschultheiss83"
+    commit-message:
+      prefix: "ci(deps):"
+      include: "scope"
