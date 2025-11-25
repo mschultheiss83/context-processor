@@ -1,0 +1,111 @@
+name: Claude Code Dispatch
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-dispatch:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '@claude')
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Parse @claude task
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment.body;
+            const issue = context.payload.issue;
+
+            // Extract task after @claude mention
+            const taskMatch = comment.match(/@claude\s+(.+?)(?:\n|$)/i);
+            if (!taskMatch) {
+              console.log('No valid @claude task found');
+              return;
+            }
+
+            const task = taskMatch[1].trim();
+            console.log(`Task: ${task}`);
+            console.log(`Issue: #${issue.number}`);
+
+            // Set outputs for next steps
+            core.setOutput('task', task);
+            core.setOutput('issue_number', issue.number);
+            core.setOutput('has_task', 'true');
+
+      - name: Add 'claude-task' label
+        if: steps.parse.outputs.has_task == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['claude-task']
+            });
+            console.log(`✓ Added 'claude-task' label`);
+
+      - name: Create task branch
+        if: steps.parse.outputs.has_task == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const timestamp = Date.now();
+            const branchName = `claude-task-${context.issue.number}-${timestamp}`;
+
+            // Get the default branch SHA
+            const branch = await github.rest.repos.getBranch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: context.payload.repository.default_branch
+            });
+
+            const sha = branch.data.commit.sha;
+
+            // Create new branch
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branchName}`,
+              sha: sha
+            });
+
+            core.setOutput('branch_name', branchName);
+            console.log(`✓ Created branch: ${branchName}`);
+
+      - name: Post task dispatch comment
+        if: steps.parse.outputs.has_task == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const task = '${{ steps.parse.outputs.task }}';
+            const branchName = '${{ steps.claude-dispatch.outputs.branch_name || steps.parse.outputs.issue_number }}';
+
+            const body = `🤖 **Claude Task Dispatched**
+
+**Task:** ${task}
+
+**What's next:**
+1. I'll work on this task in the \`${branchName}\` branch
+2. A pull request will be created for your review
+3. You can review and merge when ready
+
+**Status:** Queued for implementation
+
+---
+_Supervisor Mode: You review, I implement_`;
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            console.log(`✓ Posted dispatch comment`);
