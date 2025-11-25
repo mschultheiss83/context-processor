@@ -1,6 +1,6 @@
 {
   "name": "context-processor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Intelligent context management MCP server with pre-processing strategies for enhanced content processing",
   "main": "dist/index.js",
   "type": "module",
