@@ -1,0 +1,10 @@
+{	
+	"url": "https://github.com/nspady/google-calendar-mcp"
+	"google-calendar": {
+      "command": "npx",
+      "args": ["@cocal/google-calendar-mcp"],
+      "env": {
+        "GOOGLE_OAUTH_CREDENTIALS": "/path/to/your/gcp-oauth.keys.json"
+      }
+    }  
+}  

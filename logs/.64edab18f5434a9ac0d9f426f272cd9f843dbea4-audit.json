@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\tmp\\gemini-project-1\\logs\\.64edab18f5434a9ac0d9f426f272cd9f843dbea4-audit.json",
+    "files": [
+        {
+            "date": 1762542058544,
+            "name": "C:\\tmp\\gemini-project-1\\logs\\mcp-puppeteer-2025-11-07.log",
+            "hash": "cddeb9948b0b46bc598584e401223917837a0b68b9505259c830b3398126e1cc"
+        },
+        {
+            "date": 1762587260918,
+            "name": "C:\\tmp\\gemini-project-1\\logs\\mcp-puppeteer-2025-11-08.log",
+            "hash": "0d6688325365e91962dda597868f0bd5722b6ae8f845ec9af478aa4815607391"
+        }
+    ],
+    "hashType": "sha256"
+}

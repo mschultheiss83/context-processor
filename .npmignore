@@ -1,0 +1,59 @@
+# Development and testing
+tests/
+coverage/
+jest.config.js
+tsconfig.json
+.github/
+.vscode/
+
+# Documentation (optional - include if you want)
+TESTING.md
+TESTS_SUMMARY.md
+TEST_COMPLETION_SUMMARY.md
+ARCHITECTURE.md
+CLAUDE_CODE_INTEGRATION.md
+PUBLISHING.md
+QUICKSTART.md
+START_HERE.md
+FILE_MANIFEST.md
+PROJECT_SUMMARY.md
+examples.md
+IMPLEMENTATION_COMPLETE.md
+
+# Logs and tmp
+logs/
+*.log
+*.tmp
+.tmp/
+
+# Configuration
+.env
+.env.local
+.env.example
+.gitignore
+
+# Git
+.git/
+.gitattributes
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Build artifacts
+dist/
+node_modules/
+
+# Testing
+.nyc_output/
+*.lcov
+
+# Misc
+.gemini/
+settings.default.json
+settings.tmp.json
+GEMINI.md

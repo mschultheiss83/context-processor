@@ -1,0 +1,86 @@
+{
+  "models": [
+    {
+      "name": "clarify",
+      "description": "Model focused on clarifying and improving content clarity",
+      "strategies": [
+        {
+          "name": "clarify",
+          "type": "clarify",
+          "enabled": true,
+          "config": {}
+        }
+      ]
+    },
+    {
+      "name": "search_optimized",
+      "description": "Model for enhancing searchability and extracting keywords",
+      "strategies": [
+        {
+          "name": "search",
+          "type": "search",
+          "enabled": true,
+          "config": {
+            "maxKeywords": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "analysis",
+      "description": "Model for detailed content analysis",
+      "strategies": [
+        {
+          "name": "analyze",
+          "type": "analyze",
+          "enabled": true,
+          "config": {}
+        }
+      ]
+    },
+    {
+      "name": "comprehensive",
+      "description": "Comprehensive model with all processing strategies enabled",
+      "strategies": [
+        {
+          "name": "clarify",
+          "type": "clarify",
+          "enabled": true,
+          "config": {}
+        },
+        {
+          "name": "analyze",
+          "type": "analyze",
+          "enabled": true,
+          "config": {}
+        },
+        {
+          "name": "search",
+          "type": "search",
+          "enabled": true,
+          "config": {
+            "maxKeywords": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "web_enhanced",
+      "description": "Model for web content with URL and data fetching",
+      "strategies": [
+        {
+          "name": "fetch",
+          "type": "fetch",
+          "enabled": true,
+          "config": {}
+        },
+        {
+          "name": "analyze",
+          "type": "analyze",
+          "enabled": true,
+          "config": {}
+        }
+      ]
+    }
+  ]
+}
