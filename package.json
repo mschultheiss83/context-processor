@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/martinschultheiss/context-processor.git"
+    "url": "https://github.com/mschultheiss83/context-processor.git"
   },
   "keywords": [
     "mcp",
@@ -35,9 +35,9 @@
   "author": "Martin Schultheiss <mschultheiss83@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/martinschultheiss/context-processor/issues"
+    "url": "https://github.com/mschultheiss83/context-processor/issues"
   },
-  "homepage": "https://github.com/martinschultheiss/context-processor#readme",
+  "homepage": "https://github.com/mschultheiss83/context-processor#readme",
   "engines": {
     "node": ">=16.0.0"
   },
