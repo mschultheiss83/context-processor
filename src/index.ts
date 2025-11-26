@@ -231,6 +231,58 @@ class ContextMCPServer {
         }
       }
     );
+
+    // Register search_contexts_fulltext tool
+    this.server.registerTool(
+      "search_contexts_fulltext",
+      {
+        description: "Search contexts by keywords in title and content",
+        inputSchema: z.object({
+          query: z.string().describe("Search query (e.g., 'typescript async')"),
+          limit: z.number().optional().describe("Max results (default: 50)"),
+        }),
+      },
+      async (args) => {
+        try {
+          const results = this.storage.searchFullText(args.query, {
+            limit: args.limit || 50,
+          });
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    query: args.query,
+                    count: results.length,
+                    results: results.map((c) => ({
+                      id: c.id,
+                      title: c.title,
+                      tags: c.tags,
+                      preview: c.content.substring(0, 200) + (c.content.length > 200 ? "..." : ""),
+                      createdAt: c.createdAt,
+                    })),
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
   }
 
   private async handleSaveContext(
