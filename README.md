@@ -25,6 +25,7 @@ An intelligent Model Context Protocol (MCP) server for saving, managing, and enh
   - Save contexts with automatic or model-based processing
   - Load contexts and discover related content
   - List contexts with filtering by tags
+  - Full-text search across titles and content
   - Delete contexts
   - Query available models
 
@@ -164,6 +165,46 @@ Delete a context by ID.
 
 **Parameters:**
 - `contextId` (string, required): ID of the context to delete
+
+### search_contexts_fulltext
+
+Search contexts by keywords in title and content using full-text search.
+
+**Parameters:**
+- `query` (string, required): Search query (e.g., "typescript async")
+- `limit` (number, optional): Maximum number of results to return (default: 50)
+
+**Example:**
+```json
+{
+  "query": "async programming",
+  "limit": 10
+}
+```
+
+**Response:**
+```json
+{
+  "query": "async programming",
+  "count": 3,
+  "results": [
+    {
+      "id": "a1b2c3d4...",
+      "title": "Async Programming Guide",
+      "tags": ["programming", "async"],
+      "preview": "Learn how to use async/await patterns...",
+      "createdAt": 1234567890
+    }
+  ]
+}
+```
+
+**Features:**
+- Case-insensitive keyword matching
+- Searches in both title and content
+- Intelligent ranking: title matches weighted 10x higher than content matches
+- Multi-word query support
+- Results sorted by relevance score
 
 ## Processing Strategies
 
