@@ -66,4 +66,52 @@ export class ContextStorage {
 
     return contexts;
   }
+
+  searchFullText(query: string, options?: {
+    limit?: number;
+    fields?: ('title' | 'content')[];
+  }): ContextItem[] {
+    // Handle empty query
+    if (!query || query.trim().length === 0) {
+      return [];
+    }
+
+    // Normalize query and split into terms
+    const terms = query.toLowerCase().trim().split(/\s+/);
+    const fields = options?.fields || ['title', 'content'];
+    const results = this.list();
+
+    // Score each context based on term matches
+    const scored = results
+      .map(context => {
+        let score = 0;
+
+        for (const term of terms) {
+          // Title matches (weighted 10x)
+          if (fields.includes('title') && context.title.toLowerCase().includes(term)) {
+            score += 10;
+          }
+          // Content matches (weighted 1x)
+          if (fields.includes('content') && context.content.toLowerCase().includes(term)) {
+            score += 1;
+          }
+        }
+
+        return { context, score };
+      })
+      .filter(r => r.score > 0)
+      .sort((a, b) => {
+        // Sort by score descending
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        // Tiebreaker: alphabetical by title
+        return a.context.title.localeCompare(b.context.title);
+      })
+      .map(r => r.context);
+
+    // Apply limit if specified
+    const limit = options?.limit || 50;
+    return scored.slice(0, limit);
+  }
 }
