@@ -1,10 +1,18 @@
 import { PreProcessingStrategy, PreProcessingResult } from "./types.js";
+import { logger } from "./logger.js";
+import { metrics } from "./metrics.js";
 
 /**
  * Pre-processor for context enhancement through various strategies
  */
 export class ContextPreprocessor {
   private strategies: Map<string, PreProcessingStrategy> = new Map();
+
+  constructor() {
+    logger.info("ContextPreprocessor initialized", {
+      component: "preprocessor",
+    });
+  }
 
   registerStrategy(strategy: PreProcessingStrategy): void {
     this.strategies.set(strategy.name, strategy);
@@ -17,8 +25,15 @@ export class ContextPreprocessor {
     processed: string;
     results: PreProcessingResult[];
   }> {
+    const endTimer = metrics.startOperation("preprocess");
     const results: PreProcessingResult[] = [];
     let processedContent = content;
+
+    logger.debug("Starting content preprocessing", {
+      component: "preprocessor",
+      strategies: strategies.map((s) => s.name).join(", "),
+      contentLength: content.length,
+    });
 
     for (const strategy of strategies) {
       if (!strategy.enabled) continue;
@@ -33,7 +48,22 @@ export class ContextPreprocessor {
         if (result.result) {
           processedContent = result.result;
         }
+
+        logger.debug("Strategy executed", {
+          component: "preprocessor",
+          strategy: strategy.name,
+          processed: result.processed,
+        });
       } catch (error) {
+        metrics.recordError("preprocess", `strategy_${strategy.type}`);
+        logger.error(
+          `Strategy execution failed: ${strategy.name}`,
+          error as Error,
+          {
+            component: "preprocessor",
+            strategy: strategy.name,
+          }
+        );
         results.push({
           strategy: strategy.name,
           processed: false,
@@ -41,6 +71,14 @@ export class ContextPreprocessor {
         });
       }
     }
+
+    endTimer();
+
+    logger.info("Content preprocessing completed", {
+      component: "preprocessor",
+      strategiesExecuted: results.filter((r) => r.processed).length,
+      totalStrategies: strategies.length,
+    });
 
     return { processed: processedContent, results };
   }

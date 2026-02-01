@@ -28,6 +28,11 @@ An intelligent Model Context Protocol (MCP) server for saving, managing, and enh
   - Delete contexts
   - Query available models
 
+- **Production Observability**:
+  - **Structured Logging**: JSON-formatted logs with configurable levels (DEBUG, INFO, WARN, ERROR)
+  - **Metrics & Monitoring**: Track operation performance, duration, error rates, and storage metrics
+  - **Health Checks**: Comprehensive component health monitoring for server, storage, and preprocessor
+
 ## Installation
 
 ```bash
@@ -53,6 +58,38 @@ npm run dev
 ```
 
 ## Configuration
+
+### Logging Configuration
+
+The logging system can be configured via environment variables:
+
+```bash
+# Set log level (DEBUG, INFO, WARN, ERROR)
+export LOG_LEVEL=INFO
+
+# Run the server
+npm start
+```
+
+Log levels:
+- `DEBUG`: Detailed diagnostic information
+- `INFO`: General informational messages (default)
+- `WARN`: Warning messages for potentially harmful situations
+- `ERROR`: Error messages for serious problems
+
+Logs are output to stderr in JSON format:
+```json
+{
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "level": "INFO",
+  "message": "Context saved successfully",
+  "context": {
+    "component": "storage",
+    "contextId": "abc-123",
+    "title": "My Context"
+  }
+}
+```
 
 ### Models Configuration
 
@@ -109,6 +146,8 @@ Save content as context with optional pre-processing.
 }
 ```
 
+**Note:** All operations are automatically logged and tracked for monitoring.
+
 ### load_context
 
 Load a previously saved context and discover related contexts.
@@ -164,6 +203,109 @@ Delete a context by ID.
 
 **Parameters:**
 - `contextId` (string, required): ID of the context to delete
+
+### health_check
+
+Perform a comprehensive health check on the server and its components.
+
+**Parameters:**
+- `detailed` (boolean, optional): Include detailed component information
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": 1234567890000,
+  "uptime": 60000,
+  "components": {
+    "server": {
+      "status": "healthy",
+      "message": "Server is running",
+      "lastCheck": 1234567890000,
+      "details": {
+        "pid": 12345,
+        "nodeVersion": "v18.0.0",
+        "platform": "linux"
+      }
+    },
+    "storage": {
+      "status": "healthy",
+      "message": "Storage is accessible",
+      "lastCheck": 1234567890000,
+      "details": {
+        "directory": "./contexts",
+        "contextCount": 42
+      }
+    },
+    "preprocessor": {
+      "status": "healthy",
+      "message": "Preprocessor is operational",
+      "lastCheck": 1234567890000
+    }
+  },
+  "metrics": {
+    "totalOperations": 150,
+    "totalErrors": 2,
+    "avgResponseTime": 45.5
+  }
+}
+```
+
+### get_metrics
+
+Get metrics and monitoring data for operations.
+
+**Parameters:**
+- `operation` (string, optional): Get metrics for a specific operation (e.g., "storage.save", "preprocess")
+
+**Response (full metrics):**
+```json
+{
+  "uptime": 3600000,
+  "operations": {
+    "storage.save": {
+      "count": 50,
+      "totalDuration": 1250,
+      "avgDuration": 25,
+      "errors": 1,
+      "lastExecuted": 1234567890000
+    },
+    "preprocess": {
+      "count": 30,
+      "totalDuration": 4500,
+      "avgDuration": 150,
+      "errors": 0,
+      "lastExecuted": 1234567890000
+    }
+  },
+  "storage": {
+    "totalContexts": 42,
+    "lastSaved": 1234567890000,
+    "lastLoaded": 1234567889000
+  },
+  "errors": {
+    "total": 5,
+    "byType": {
+      "validation_error": 3,
+      "timeout_error": 2
+    }
+  }
+}
+```
+
+**Response (specific operation):**
+```json
+{
+  "operation": "storage.save",
+  "metrics": {
+    "count": 50,
+    "totalDuration": 1250,
+    "avgDuration": 25,
+    "errors": 1,
+    "lastExecuted": 1234567890000
+  }
+}
+```
 
 ## Processing Strategies
 
@@ -289,6 +431,42 @@ private customStrategy(
 }
 ```
 
+## Observability & Monitoring
+
+The Context Processor includes comprehensive observability features for production use:
+
+### Structured Logging
+
+All components emit structured JSON logs with contextual information:
+- Operation lifecycle tracking (start, completion, errors)
+- Component-level logging (storage, preprocessor, server)
+- Configurable log levels via `LOG_LEVEL` environment variable
+- Error details including stack traces
+
+### Metrics Collection
+
+Built-in metrics tracking for:
+- **Operation metrics**: Count, duration, average response time, error count
+- **Storage metrics**: Total contexts, last saved/loaded timestamps
+- **Error tracking**: Total errors and breakdown by error type
+- **System metrics**: Uptime, process information
+
+Use the `get_metrics` tool to retrieve real-time metrics data.
+
+### Health Checks
+
+The `health_check` tool provides:
+- Overall system health status (healthy/degraded/unhealthy)
+- Component-level health checks (server, storage, preprocessor)
+- Storage accessibility verification
+- Performance metrics summary
+
+Health checks can be used for:
+- Kubernetes liveness/readiness probes
+- Monitoring system integration
+- Automated alerting
+- Troubleshooting and diagnostics
+
 ## File Structure
 
 ```
@@ -297,7 +475,13 @@ private customStrategy(
 │   ├── index.ts           # Main MCP server
 │   ├── types.ts           # Type definitions
 │   ├── storage.ts         # Context persistence
-│   └── preprocessor.ts    # Processing strategies
+│   ├── preprocessor.ts    # Processing strategies
+│   ├── logger.ts          # Structured logging system
+│   ├── metrics.ts         # Metrics collection
+│   └── health.ts          # Health check system
+├── tests/
+│   ├── observability.test.ts  # Observability tests
+│   └── ...                    # Other test files
 ├── contexts/              # Stored contexts (auto-created)
 ├── dist/                  # Compiled output
 ├── context-models.json    # Model configurations

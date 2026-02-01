@@ -68,3 +68,11 @@ export interface PreProcessingResult {
   result?: string;
   error?: string;
 }
+
+export interface HealthCheckRequest {
+  detailed?: boolean;
+}
+
+export interface MetricsRequest {
+  operation?: string;
+}

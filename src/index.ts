@@ -14,9 +14,14 @@ import {
   ListContextsResponse,
   ContextModel,
   PreProcessingStrategy,
+  HealthCheckRequest,
+  MetricsRequest,
 } from "./types.js";
 import * as fs from "fs";
 import * as path from "path";
+import { logger, LogLevel } from "./logger.js";
+import { metrics } from "./metrics.js";
+import { healthChecker } from "./health.js";
 
 class ContextMCPServer {
   private server: McpServer;
@@ -30,11 +35,26 @@ class ContextMCPServer {
       version: "1.0.0",
     });
 
+    logger.info("Initializing Context MCP Server", {
+      component: "server",
+      version: "1.0.0",
+    });
+
     this.storage = new ContextStorage("./contexts");
     this.preprocessor = new ContextPreprocessor();
 
     this.loadModels();
     this.setupTools();
+
+    // Initialize metrics with current context count
+    const contexts = this.storage.list();
+    metrics.setTotalContexts(contexts.length);
+
+    logger.info("Context MCP Server initialized", {
+      component: "server",
+      contextsLoaded: contexts.length,
+      modelsLoaded: this.models.size,
+    });
   }
 
   private setupTools(): void {
@@ -231,11 +251,86 @@ class ContextMCPServer {
         }
       }
     );
+
+    // Register health_check tool
+    this.server.registerTool(
+      "health_check",
+      {
+        description: "Perform a health check on the server and its components",
+        inputSchema: z.object({
+          detailed: z
+            .boolean()
+            .optional()
+            .describe("Include detailed component information"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = await this.handleHealthCheck(
+            args as HealthCheckRequest
+          );
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    // Register get_metrics tool
+    this.server.registerTool(
+      "get_metrics",
+      {
+        description: "Get metrics and monitoring data",
+        inputSchema: z.object({
+          operation: z
+            .string()
+            .optional()
+            .describe("Get metrics for a specific operation"),
+        }),
+      },
+      async (args) => {
+        try {
+          const result = this.handleGetMetrics(args as MetricsRequest);
+          return {
+            content: [{ type: "text", text: result }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+    );
   }
 
   private async handleSaveContext(
     request: SaveContextRequest
   ): Promise<string> {
+    const endTimer = metrics.startOperation("tool.save_context");
+
+    logger.info("Saving context", {
+      component: "server",
+      title: request.title,
+      tags: request.tags?.join(", "),
+      modelName: request.modelName,
+    });
+
     const contextId = randomUUID();
     const now = Date.now();
 
@@ -275,6 +370,8 @@ class ContextMCPServer {
 
     this.storage.save(context);
 
+    endTimer();
+
     const response: SaveContextResponse = {
       success: true,
       contextId,
@@ -283,12 +380,25 @@ class ContextMCPServer {
       timestamp: now,
     };
 
+    logger.info("Context saved successfully", {
+      component: "server",
+      contextId,
+      appliedStrategies: appliedStrategies.length,
+    });
+
     return JSON.stringify(response, null, 2);
   }
 
   private async handleLoadContext(
     request: LoadContextRequest
   ): Promise<string> {
+    const endTimer = metrics.startOperation("tool.load_context");
+
+    logger.debug("Loading context", {
+      component: "server",
+      contextId: request.contextId,
+    });
+
     const context = this.storage.load(request.contextId);
     if (!context) {
       return JSON.stringify({
@@ -306,10 +416,18 @@ class ContextMCPServer {
       })
       .slice(0, 5);
 
+    endTimer();
+
     const response: LoadContextResponse = {
       context,
       relatedContexts,
     };
+
+    logger.debug("Context loaded successfully", {
+      component: "server",
+      contextId: request.contextId,
+      relatedCount: relatedContexts.length,
+    });
 
     return JSON.stringify(response, null, 2);
   }
@@ -365,6 +483,60 @@ class ContextMCPServer {
     return JSON.stringify(model, null, 2);
   }
 
+  private async handleHealthCheck(
+    request: HealthCheckRequest
+  ): Promise<string> {
+    logger.info("Performing health check", {
+      component: "server",
+      detailed: request.detailed,
+    });
+
+    const healthResult = await healthChecker.performHealthCheck();
+
+    if (!request.detailed) {
+      // Return simplified health status
+      return JSON.stringify(
+        {
+          status: healthResult.status,
+          timestamp: healthResult.timestamp,
+          uptime: healthResult.uptime,
+        },
+        null,
+        2
+      );
+    }
+
+    return JSON.stringify(healthResult, null, 2);
+  }
+
+  private handleGetMetrics(request: MetricsRequest): string {
+    logger.debug("Getting metrics", {
+      component: "server",
+      operation: request.operation,
+    });
+
+    if (request.operation) {
+      const operationMetrics = metrics.getOperationMetrics(request.operation);
+      if (!operationMetrics) {
+        return JSON.stringify({
+          error: "Operation not found",
+          message: `No metrics available for operation: ${request.operation}`,
+        });
+      }
+      return JSON.stringify(
+        {
+          operation: request.operation,
+          metrics: operationMetrics,
+        },
+        null,
+        2
+      );
+    }
+
+    const summary = metrics.getSummary();
+    return JSON.stringify(summary, null, 2);
+  }
+
   private loadModels(): void {
     const configPath = path.join(process.cwd(), "context-models.json");
 
@@ -378,12 +550,26 @@ class ContextMCPServer {
             this.models.set(modelConfig.name, modelConfig);
           });
         }
+
+        logger.info("Loaded custom models from config", {
+          component: "server",
+          count: this.models.size,
+          path: configPath,
+        });
       } catch (error) {
+        logger.error("Failed to load context models", error as Error, {
+          component: "server",
+          path: configPath,
+        });
         console.error("Failed to load context models:", error);
       }
     } else {
       // Load default models
       this.loadDefaultModels();
+      logger.info("Loaded default models", {
+        component: "server",
+        count: this.models.size,
+      });
     }
   }
 
@@ -443,6 +629,15 @@ class ContextMCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
+
+    logger.info("Context Processor MCP Server started", {
+      component: "server",
+      transport: "stdio",
+    });
+
+    // Perform initial health check
+    await healthChecker.performHealthCheck();
+
     console.error("Context Processor started");
   }
 }
@@ -450,6 +645,9 @@ class ContextMCPServer {
 // Start the server
 const server = new ContextMCPServer();
 server.start().catch((error) => {
+  logger.error("Server startup failed", error as Error, {
+    component: "server",
+  });
   console.error("Server error:", error);
   process.exit(1);
 });
