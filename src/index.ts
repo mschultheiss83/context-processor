@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { ContextStorage } from "./storage.js";
+import { ContextStorage, StorageError } from "./storage.js";
 import { ContextPreprocessor } from "./preprocessor.js";
 import {
   ContextItem,
@@ -37,6 +37,29 @@ class ContextMCPServer {
     this.setupTools();
   }
 
+  /**
+   * Formats error messages with recovery suggestions
+   */
+  private formatError(error: unknown): string {
+    if (error instanceof StorageError) {
+      let message = `Error [${error.code}]: ${error.message}`;
+
+      // Add recovery suggestions based on error code
+      if (error.code === "ENOSPC") {
+        message += "\n\nRecovery: Free up disk space and try again.";
+      } else if (error.code === "EACCES") {
+        message += "\n\nRecovery: Check file/directory permissions.";
+      } else if (error.code === "CORRUPTED_JSON") {
+        message += "\n\nRecovery: The system attempted automatic recovery from backup.";
+      } else if (error.recoverable) {
+        message += "\n\nThis error may be temporary. Please try again.";
+      }
+
+      return message;
+    }
+    return `Error: ${error instanceof Error ? error.message : String(error)}`;
+  }
+
   private setupTools(): void {
     // Register save_context tool
     this.server.registerTool(
@@ -65,11 +88,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -94,11 +118,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -134,11 +159,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -161,11 +187,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -190,11 +217,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -219,11 +247,12 @@ class ContextMCPServer {
             content: [{ type: "text", text: result }],
           };
         } catch (error) {
+          const errorMessage = this.formatError(error);
           return {
             content: [
               {
                 type: "text",
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                text: errorMessage,
               },
             ],
             isError: true,
@@ -371,15 +400,71 @@ class ContextMCPServer {
     if (fs.existsSync(configPath)) {
       try {
         const configData = fs.readFileSync(configPath, "utf-8");
-        const config = JSON.parse(configData);
+
+        // Attempt to parse JSON with error handling for corrupted files
+        let config;
+        try {
+          config = JSON.parse(configData);
+        } catch (parseError) {
+          console.error(
+            "ERROR: context-models.json is corrupted. Using default models.",
+            parseError instanceof Error ? parseError.message : String(parseError)
+          );
+          this.loadDefaultModels();
+          return;
+        }
 
         if (config.models && Array.isArray(config.models)) {
+          let loadedCount = 0;
           config.models.forEach((modelConfig: ContextModel) => {
-            this.models.set(modelConfig.name, modelConfig);
+            try {
+              // Validate model structure
+              if (!modelConfig.name || !modelConfig.strategies) {
+                console.error(
+                  `Skipping invalid model configuration: ${JSON.stringify(modelConfig)}`
+                );
+                return;
+              }
+              this.models.set(modelConfig.name, modelConfig);
+              loadedCount++;
+            } catch (error) {
+              console.error(
+                `Failed to load model '${modelConfig.name}':`,
+                error instanceof Error ? error.message : String(error)
+              );
+            }
           });
+
+          console.error(
+            `Loaded ${loadedCount} model(s) from context-models.json`
+          );
+
+          // If no models were loaded successfully, fall back to defaults
+          if (loadedCount === 0) {
+            console.error(
+              "No valid models found in config, loading default models"
+            );
+            this.loadDefaultModels();
+          }
+        } else {
+          console.error(
+            "Invalid context-models.json format: missing or invalid 'models' array"
+          );
+          this.loadDefaultModels();
         }
       } catch (error) {
-        console.error("Failed to load context models:", error);
+        const errCode = (error as NodeJS.ErrnoException).code;
+        if (errCode === "EACCES") {
+          console.error(
+            "ERROR: Permission denied reading context-models.json. Using default models."
+          );
+        } else {
+          console.error(
+            "ERROR: Failed to load context models:",
+            error instanceof Error ? error.message : String(error)
+          );
+        }
+        this.loadDefaultModels();
       }
     } else {
       // Load default models

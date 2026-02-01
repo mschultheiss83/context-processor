@@ -199,8 +199,21 @@ Contexts are stored as JSON files in the `./contexts` directory. Each context fi
 contexts/
 ├── a1b2c3d4-e5f6-7g8h-9i0j-1k2l3m4n5o6p.json
 ├── b2c3d4e5-f6g7-h8i9-j0k1-l2m3n4o5p6q.json
-└── ...
+├── ...
+└── .backups/                              # Automatic backups
+    └── a1b2c3d4-....<timestamp>.backup.json
 ```
+
+### Error Handling and Recovery
+
+The Context Processor includes comprehensive error handling for:
+
+- **Disk Full**: Graceful handling when storage is full
+- **Corrupted JSON**: Automatic recovery from backup files
+- **Permission Issues**: Clear error messages for access problems
+- **Transient Errors**: Automatic retry with exponential backoff
+
+Backups are automatically created before modifications and deletions. See [Error Handling Documentation](./docs/ERROR_HANDLING.md) for detailed information.
 
 ## Example Usage
 
